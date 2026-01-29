@@ -25,6 +25,9 @@ class Game {
         this.effects = [];
         this.damageOverlay = null;
 
+        // 총알
+        this.bullets = [];
+
         // 프레임 관련
         this.lastTime = 0;
         this.deltaTime = 0;
@@ -113,6 +116,7 @@ class Game {
         this.gameTime = 0;
         this.chapterStartTime = Date.now();
         this.effects = [];
+        this.bullets = [];
 
         // UI 업데이트
         UI.updateChapterInfo(this.level.data.name, this.level.data.objective);
@@ -191,6 +195,9 @@ class Game {
 
         // 카메라 업데이트
         this.updateCamera();
+
+        // 총알 업데이트
+        this.updateBullets(deltaTime);
 
         // 이펙트 업데이트
         this.updateEffects(deltaTime);
@@ -274,27 +281,146 @@ class Game {
     shoot() {
         if (this.state !== 'playing') return;
 
-        const hits = this.player.shoot(this.enemies.enemies);
-
-        for (const hit of hits) {
-            // 히트 이펙트
-            if (hit.hitX !== undefined) {
-                this.addEffect('hit', hit.hitX, hit.hitY);
-            }
-
-            if (hit.killed) {
-                this.level.addKill();
-                this.enemies.totalKills++;
-                this.addEffect('death', hit.enemy.x, hit.enemy.y);
-            }
-        }
-
-        // 총구 화염 이펙트
         const weapon = this.player.weapons.getCurrentWeapon();
-        if (weapon.type !== WeaponTypes.MELEE && hits.length >= 0) {
+        const bulletData = weapon.fire();
+
+        if (!bulletData) return;
+
+        this.player.shotsFired += bulletData.length;
+        this.player.armAngle = -0.3;
+        setTimeout(() => this.player.armAngle = 0, 100);
+
+        // 근접 무기는 즉시 히트 판정
+        if (weapon.type === WeaponTypes.MELEE) {
+            for (const enemy of this.enemies.enemies) {
+                if (!enemy.isAlive) continue;
+
+                const dist = Utils.distance(this.player.x, this.player.y, enemy.x, enemy.y);
+                if (dist > weapon.range) continue;
+
+                const angleToEnemy = Utils.angle(this.player.x, this.player.y, enemy.x, enemy.y);
+                let angleDiff = Math.abs(this.player.angle - angleToEnemy);
+                if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+
+                if (angleDiff < Math.PI / 2) {
+                    this.player.shotsHit++;
+                    const killed = enemy.takeDamage(weapon.damage);
+                    this.addEffect('hit', enemy.x, enemy.y);
+
+                    if (killed) {
+                        this.level.addKill();
+                        this.enemies.totalKills++;
+                        this.addEffect('death', enemy.x, enemy.y);
+                    }
+                    break;
+                }
+            }
+        } else {
+            // 총알 생성
+            for (const bullet of bulletData) {
+                const spreadAngle = this.player.angle + Utils.toRadians(bullet.spread);
+                const speed = 25; // 총알 속도
+
+                this.bullets.push({
+                    x: this.player.x,
+                    y: this.player.y,
+                    vx: Math.cos(spreadAngle) * speed,
+                    vy: Math.sin(spreadAngle) * speed,
+                    damage: bullet.damage,
+                    range: bullet.range,
+                    traveled: 0,
+                    angle: spreadAngle
+                });
+            }
+
+            // 총구 화염 이펙트
             const muzzleX = this.player.x + Math.cos(this.player.angle) * 35;
             const muzzleY = this.player.y + Math.sin(this.player.angle) * 35;
             this.addEffect('muzzle', muzzleX, muzzleY);
+        }
+    }
+
+    updateBullets(deltaTime) {
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+            const bullet = this.bullets[i];
+
+            // 총알 이동
+            const moveX = bullet.vx * (deltaTime / 16);
+            const moveY = bullet.vy * (deltaTime / 16);
+            bullet.x += moveX;
+            bullet.y += moveY;
+            bullet.traveled += Math.sqrt(moveX * moveX + moveY * moveY);
+
+            // 사거리 초과 체크
+            if (bullet.traveled >= bullet.range) {
+                this.bullets.splice(i, 1);
+                continue;
+            }
+
+            // 적과 충돌 체크
+            let hit = false;
+            for (const enemy of this.enemies.enemies) {
+                if (!enemy.isAlive) continue;
+
+                const dist = Utils.distance(bullet.x, bullet.y, enemy.x, enemy.y);
+                if (dist < enemy.size / 2 + 15) {
+                    // 히트!
+                    hit = true;
+                    this.player.shotsHit++;
+                    const killed = enemy.takeDamage(bullet.damage);
+
+                    this.addEffect('hit', bullet.x, bullet.y);
+
+                    if (killed) {
+                        this.level.addKill();
+                        this.enemies.totalKills++;
+                        this.addEffect('death', enemy.x, enemy.y);
+                    }
+
+                    this.bullets.splice(i, 1);
+                    break;
+                }
+            }
+
+            if (hit) continue;
+
+            // 벽 충돌 체크
+            if (this.level.checkCollision(bullet.x - 5, bullet.y - 5, 10, 10)) {
+                this.addEffect('hit', bullet.x, bullet.y);
+                this.bullets.splice(i, 1);
+            }
+        }
+    }
+
+    drawBullets() {
+        for (const bullet of this.bullets) {
+            const screenX = bullet.x - this.cameraX;
+            const screenY = bullet.y - this.cameraY;
+
+            this.ctx.save();
+            this.ctx.translate(screenX, screenY);
+            this.ctx.rotate(bullet.angle);
+
+            // 총알 몸체
+            this.ctx.fillStyle = '#ffcc00';
+            this.ctx.beginPath();
+            this.ctx.ellipse(0, 0, 12, 4, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // 총알 빛나는 효과
+            this.ctx.fillStyle = '#fff';
+            this.ctx.beginPath();
+            this.ctx.ellipse(4, 0, 6, 2, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // 총알 꼬리 (잔상)
+            const gradient = this.ctx.createLinearGradient(-30, 0, 0, 0);
+            gradient.addColorStop(0, 'rgba(255, 200, 0, 0)');
+            gradient.addColorStop(1, 'rgba(255, 200, 0, 0.8)');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(-30, -2, 30, 4);
+
+            this.ctx.restore();
         }
     }
 
@@ -360,6 +486,9 @@ class Game {
 
             // 플레이어 그리기
             this.player.draw(this.ctx, this.cameraX, this.cameraY);
+
+            // 총알 그리기
+            this.drawBullets();
 
             // 이펙트 그리기
             this.drawEffects();
