@@ -134,8 +134,11 @@ const UI = {
         document.getElementById('currentAmmo').textContent = weapon.currentAmmo === Infinity ? '∞' : weapon.currentAmmo;
         document.getElementById('maxAmmo').textContent = weapon.reserveAmmo === undefined ? '' : weapon.reserveAmmo;
 
-        // 무기 슬롯 업데이트
-        const slots = document.querySelectorAll('.weapon-slot');
+        // 무기 슬롯 업데이트 (새 컨테이너 사용)
+        const container = document.getElementById('weaponSlotsContainer');
+        if (!container) return;
+
+        const slots = container.querySelectorAll('.weapon-slot');
         slots.forEach((slot, index) => {
             slot.classList.remove('active');
 
@@ -155,7 +158,10 @@ const UI = {
     },
 
     updateWeaponSlots(weaponManager) {
-        const slots = document.querySelectorAll('.weapon-slot');
+        const container = document.getElementById('weaponSlotsContainer');
+        if (!container) return;
+
+        const slots = container.querySelectorAll('.weapon-slot');
         slots.forEach((slot, index) => {
             if (index < weaponManager.weapons.length && weaponManager.unlockedSlots[index]) {
                 const w = weaponManager.weapons[index];

@@ -124,36 +124,39 @@ const Controls = {
     },
 
     setupWeaponSlots() {
-        const slots = document.querySelectorAll('.weapon-slot');
+        // 무기 슬롯 컨테이너에서 슬롯 가져오기
+        const container = document.getElementById('weaponSlotsContainer');
+        if (!container) return;
+
+        const slots = container.querySelectorAll('.weapon-slot');
         slots.forEach((slot, index) => {
-            // 터치 시작 이벤트 (모바일) - 가장 확실한 방법
-            slot.addEventListener('touchstart', (e) => {
+            // 터치 시작 이벤트 (모바일)
+            slot.ontouchstart = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                e.stopImmediatePropagation();
 
                 if (!slot.classList.contains('locked') && game.state === 'playing') {
-                    const success = game.player.weapons.switchWeapon(index);
-                    if (success) {
-                        UI.updateWeapon(game.player.weapons);
-                        // 시각적 피드백
-                        slot.style.transform = 'scale(0.9)';
-                        setTimeout(() => {
-                            slot.style.transform = '';
-                        }, 100);
-                    }
+                    game.player.weapons.switchWeapon(index);
+                    UI.updateWeapon(game.player.weapons);
+                    // 시각적 피드백
+                    slot.style.transform = 'scale(0.85)';
+                    slot.style.background = 'rgba(196, 30, 58, 0.6)';
+                    setTimeout(() => {
+                        slot.style.transform = '';
+                        slot.style.background = '';
+                    }, 150);
                 }
-            }, { passive: false, capture: true });
+            };
 
             // 클릭 이벤트 (PC)
-            slot.addEventListener('click', (e) => {
+            slot.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (!slot.classList.contains('locked') && game.state === 'playing') {
                     game.player.weapons.switchWeapon(index);
                     UI.updateWeapon(game.player.weapons);
                 }
-            });
+            };
         });
     },
 

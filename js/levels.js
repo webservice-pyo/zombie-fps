@@ -322,51 +322,42 @@ const LevelData = {
                     { type: 'walker', x: 100, y: 200 },
                     { type: 'walker', x: 200, y: 100 },
                     { type: 'walker', x: 1200, y: 100 },
-                    { type: 'walker', x: 1300, y: 200 },
                 ]
             },
             {
                 trigger: 'kills',
-                killCount: 4,
+                killCount: 3,
                 message: '웨이브 2!',
                 enemies: [
                     { type: 'walker' },
-                    { type: 'walker' },
                     { type: 'runner' },
                     { type: 'runner' },
-                    { type: 'walker', delay: 2000 },
-                    { type: 'walker', delay: 2000 },
+                    { type: 'walker', delay: 500 },
                 ]
             },
             {
                 trigger: 'kills',
-                killCount: 10,
-                message: '웨이브 3: 더 많은 좀비들!',
+                killCount: 7,
+                message: '웨이브 3!',
                 enemies: [
-                    { type: 'walker' },
-                    { type: 'walker' },
                     { type: 'walker' },
                     { type: 'runner' },
                     { type: 'runner' },
                     { type: 'spitter' },
-                    { type: 'brute', delay: 3000 },
+                    { type: 'brute', delay: 1000 },
                 ]
             },
             {
                 trigger: 'kills',
-                killCount: 17,
+                killCount: 12,
                 message: '최종 웨이브!',
                 enemies: [
                     { type: 'runner' },
                     { type: 'runner' },
-                    { type: 'runner' },
                     { type: 'brute' },
                     { type: 'spitter' },
-                    { type: 'spitter' },
-                    { type: 'walker', delay: 1000 },
-                    { type: 'walker', delay: 1000 },
-                    { type: 'walker', delay: 2000 },
-                    { type: 'runner', delay: 3000 },
+                    { type: 'walker', delay: 500 },
+                    { type: 'runner', delay: 1000 },
                 ]
             }
         ],
@@ -382,7 +373,7 @@ const LevelData = {
 
         clearCondition: {
             type: 'survive',
-            killCount: 27
+            killCount: 18
         }
     },
 
@@ -411,8 +402,8 @@ const LevelData = {
             { type: 'car', x: 1350, y: 550, width: 80, height: 40, color: '#666', rotation: 1.5 },
             { type: 'building', x: 1500, y: 200, width: 200, height: 350, color: '#4a4a4a' },
             { type: 'building', x: 1500, y: 650, width: 200, height: 350, color: '#4a4a4a' },
-            // 착륙장
-            { type: 'helipad', x: 2100, y: 400, width: 300, height: 400, color: '#555' },
+            // 착륙장 (hollow로 진입 가능)
+            { type: 'helipad', x: 2100, y: 400, width: 300, height: 400, color: '#555', hollow: true },
         ],
 
         waves: [
