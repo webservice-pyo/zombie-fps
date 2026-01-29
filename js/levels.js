@@ -602,6 +602,9 @@ class Level {
 
     checkCollision(x, y, width, height) {
         for (const struct of this.structures) {
+            // hollow 건물은 충돌 체크 제외
+            if (struct.hollow) continue;
+
             if (Utils.rectCollision(
                 { x, y, width, height },
                 { x: struct.x, y: struct.y, width: struct.width, height: struct.height }
