@@ -86,20 +86,39 @@ const Controls = {
             this.onReload();
         }, { passive: false });
 
-        // 캔버스 터치 (조준 보조)
+        // 캔버스 터치 (조준)
         const canvas = document.getElementById('gameCanvas');
         canvas.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1 && game.state === 'playing') {
+            if (game.state === 'playing') {
                 const touch = e.touches[0];
                 const rect = canvas.getBoundingClientRect();
                 const x = touch.clientX - rect.left;
                 const y = touch.clientY - rect.top;
 
-                // 화면 중앙 기준 각도 계산
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const angle = Math.atan2(y - centerY, x - centerX);
-                game.player.setAngle(angle);
+                // 왼쪽 영역(조이스틱)이 아닌 경우에만 조준
+                if (x > rect.width * 0.3) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const angle = Math.atan2(y - centerY, x - centerX);
+                    game.player.setAngle(angle);
+                }
+            }
+        }, { passive: true });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (game.state === 'playing') {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+
+                // 왼쪽 영역(조이스틱)이 아닌 경우에만 조준
+                if (x > rect.width * 0.3) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const angle = Math.atan2(y - centerY, x - centerX);
+                    game.player.setAngle(angle);
+                }
             }
         }, { passive: true });
     },
@@ -282,6 +301,9 @@ const Controls = {
         this.look.startY = touch.clientY;
         this.look.lastX = touch.clientX;
         this.look.lastY = touch.clientY;
+
+        // 터치한 위치 방향으로 즉시 조준
+        this.aimAtTouch(touch.clientX, touch.clientY);
     },
 
     onLookMove(e) {
@@ -290,10 +312,8 @@ const Controls = {
         for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = e.changedTouches[i];
             if (touch.identifier === this.lookTouchId) {
-                const dx = touch.clientX - this.look.lastX;
-                const sensitivity = 0.01;
-
-                game.player.angle += dx * sensitivity;
+                // 터치한 위치 방향으로 조준
+                this.aimAtTouch(touch.clientX, touch.clientY);
 
                 this.look.lastX = touch.clientX;
                 this.look.lastY = touch.clientY;
@@ -311,6 +331,26 @@ const Controls = {
                 break;
             }
         }
+    },
+
+    // 터치 위치 방향으로 조준
+    aimAtTouch(touchX, touchY) {
+        if (game.state !== 'playing') return;
+
+        const canvas = document.getElementById('gameCanvas');
+        const rect = canvas.getBoundingClientRect();
+
+        // 화면 중앙 (플레이어 위치)
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        // 터치 위치 (캔버스 기준)
+        const x = touchX - rect.left;
+        const y = touchY - rect.top;
+
+        // 각도 계산
+        const angle = Math.atan2(y - centerY, x - centerX);
+        game.player.setAngle(angle);
     },
 
     onShoot() {
