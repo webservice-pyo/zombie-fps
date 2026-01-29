@@ -126,6 +126,25 @@ const Controls = {
     setupWeaponSlots() {
         const slots = document.querySelectorAll('.weapon-slot');
         slots.forEach((slot, index) => {
+            // 터치 시작 이벤트 (모바일) - 가장 확실한 방법
+            slot.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                if (!slot.classList.contains('locked') && game.state === 'playing') {
+                    const success = game.player.weapons.switchWeapon(index);
+                    if (success) {
+                        UI.updateWeapon(game.player.weapons);
+                        // 시각적 피드백
+                        slot.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            slot.style.transform = '';
+                        }, 100);
+                    }
+                }
+            }, { passive: false, capture: true });
+
             // 클릭 이벤트 (PC)
             slot.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -135,16 +154,6 @@ const Controls = {
                     UI.updateWeapon(game.player.weapons);
                 }
             });
-
-            // 터치 이벤트 (모바일) - touchend로 변경하여 확실한 감지
-            slot.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!slot.classList.contains('locked') && game.state === 'playing') {
-                    game.player.weapons.switchWeapon(index);
-                    UI.updateWeapon(game.player.weapons);
-                }
-            }, { passive: false });
         });
     },
 

@@ -18,9 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     controlLoop();
 
     // 터치 이벤트 기본 동작 방지 (스크롤, 확대 등)
+    // 단, 무기 슬롯은 제외
     document.addEventListener('touchmove', (e) => {
         if (game.state === 'playing') {
-            e.preventDefault();
+            const target = e.target;
+            // 무기 슬롯이 아닌 경우에만 기본 동작 방지
+            if (!target.closest('.weapon-slot') && !target.closest('.weapon-slots')) {
+                e.preventDefault();
+            }
         }
     }, { passive: false });
 
