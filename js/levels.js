@@ -179,42 +179,46 @@ const LevelData = {
         name: '챕터 3: 버려진 병원',
         description: '의료 물품을 확보하고 생존자를 구출하라.',
         objective: '병원에서 생존자를 찾아라',
-        mapSize: { width: 1600, height: 1600 },
-        playerStart: { x: 800, y: 1500 },
+        mapSize: { width: 1600, height: 1400 },
+        playerStart: { x: 800, y: 1200 },
         backgroundColor: '#1a1f1a',
         floorColor: '#252f25',
 
         structures: [
-            // 병원 외벽
+            // 병원 외벽 (입구 열림)
             { type: 'wall', x: 100, y: 100, width: 1400, height: 40, color: '#ddd' },
-            { type: 'wall', x: 100, y: 100, width: 40, height: 1000, color: '#ddd' },
-            { type: 'wall', x: 1460, y: 100, width: 40, height: 1000, color: '#ddd' },
-            { type: 'wall', x: 100, y: 1060, width: 600, height: 40, color: '#ddd' },
-            { type: 'wall', x: 900, y: 1060, width: 600, height: 40, color: '#ddd' },
-            // 내부 벽
-            { type: 'wall', x: 500, y: 100, width: 30, height: 400, color: '#ccc' },
-            { type: 'wall', x: 500, y: 600, width: 30, height: 460, color: '#ccc' },
-            { type: 'wall', x: 1000, y: 100, width: 30, height: 400, color: '#ccc' },
-            { type: 'wall', x: 1000, y: 600, width: 30, height: 460, color: '#ccc' },
-            // 복도
-            { type: 'wall', x: 100, y: 500, width: 400, height: 30, color: '#ccc' },
-            { type: 'wall', x: 1030, y: 500, width: 430, height: 30, color: '#ccc' },
+            { type: 'wall', x: 100, y: 100, width: 40, height: 900, color: '#ddd' },
+            { type: 'wall', x: 1460, y: 100, width: 40, height: 900, color: '#ddd' },
+            // 아래 벽 (중앙 입구 열림 - 700~900)
+            { type: 'wall', x: 100, y: 960, width: 600, height: 40, color: '#ddd' },
+            { type: 'wall', x: 900, y: 960, width: 600, height: 40, color: '#ddd' },
+            // 내부 벽 (통로 열림)
+            { type: 'wall', x: 400, y: 140, width: 30, height: 300, color: '#ccc' },
+            { type: 'wall', x: 400, y: 540, width: 30, height: 300, color: '#ccc' },
+            { type: 'wall', x: 1100, y: 140, width: 30, height: 300, color: '#ccc' },
+            { type: 'wall', x: 1100, y: 540, width: 30, height: 300, color: '#ccc' },
+            // 복도 벽 (통로 열림)
+            { type: 'wall', x: 140, y: 450, width: 260, height: 30, color: '#ccc' },
+            { type: 'wall', x: 1130, y: 450, width: 290, height: 30, color: '#ccc' },
             // 침대들
             { type: 'bed', x: 200, y: 200, width: 80, height: 40, color: '#666' },
             { type: 'bed', x: 200, y: 300, width: 80, height: 40, color: '#666' },
-            { type: 'bed', x: 350, y: 200, width: 80, height: 40, color: '#666' },
-            { type: 'bed', x: 350, y: 300, width: 80, height: 40, color: '#666' },
-            { type: 'bed', x: 600, y: 200, width: 80, height: 40, color: '#666' },
-            { type: 'bed', x: 750, y: 200, width: 80, height: 40, color: '#666' },
+            { type: 'bed', x: 550, y: 200, width: 80, height: 40, color: '#666' },
+            { type: 'bed', x: 550, y: 300, width: 80, height: 40, color: '#666' },
+            { type: 'bed', x: 950, y: 200, width: 80, height: 40, color: '#666' },
+            { type: 'bed', x: 950, y: 300, width: 80, height: 40, color: '#666' },
+            // 책상
+            { type: 'desk', x: 700, y: 600, width: 100, height: 50, color: '#654' },
+            { type: 'desk', x: 700, y: 750, width: 100, height: 50, color: '#654' },
         ],
 
         waves: [
             {
                 trigger: 'start',
                 enemies: [
-                    { type: 'walker', x: 300, y: 400 },
-                    { type: 'walker', x: 700, y: 300 },
-                    { type: 'spitter', x: 1200, y: 400 },
+                    { type: 'walker', x: 300, y: 700 },
+                    { type: 'walker', x: 700, y: 500 },
+                    { type: 'spitter', x: 1200, y: 600 },
                 ]
             },
             {
@@ -239,7 +243,7 @@ const LevelData = {
             },
             {
                 trigger: 'area',
-                area: { x: 750, y: 750, radius: 100 },
+                area: { x: 750, y: 300, radius: 150 },
                 enemies: [
                     { type: 'walker' },
                     { type: 'walker' },
@@ -253,10 +257,10 @@ const LevelData = {
 
         items: [
             { type: 'health', x: 250, y: 250, amount: 50 },
-            { type: 'health', x: 400, y: 350, amount: 50 },
-            { type: 'ammo', x: 650, y: 250, weapon: 'rifle', amount: 30 },
-            { type: 'ammo', x: 1100, y: 300, weapon: 'rifle', amount: 30 },
-            { type: 'health', x: 750, y: 700, amount: 30 },
+            { type: 'health', x: 600, y: 600, amount: 50 },
+            { type: 'ammo', x: 800, y: 500, weapon: 'rifle', amount: 30 },
+            { type: 'ammo', x: 1200, y: 500, weapon: 'rifle', amount: 30 },
+            { type: 'health', x: 750, y: 300, amount: 30 },
         ],
 
         // NPC (생존자)
@@ -265,7 +269,7 @@ const LevelData = {
                 id: 'survivor1',
                 name: '민준',
                 x: 750,
-                y: 750,
+                y: 250,
                 emoji: '👨',
                 dialog: [
                     '감사합니다! 여기서 3일을 버텼어요.',

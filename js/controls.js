@@ -385,6 +385,12 @@ const Controls = {
 
         game.player.setMovement(moveX, moveY);
 
+        // 모바일: 이동 방향으로 자동 조준 (터치 조준 중이 아닐 때만)
+        if (Utils.isMobile() && !this.look.active && (moveX !== 0 || moveY !== 0)) {
+            const moveAngle = Math.atan2(moveY, moveX);
+            game.player.setAngle(moveAngle);
+        }
+
         // 자동 발사 (연사 무기)
         if (this.mouse.down || this.isTouchingShooting()) {
             const weapon = game.player.weapons.getCurrentWeapon();
