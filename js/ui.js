@@ -107,6 +107,16 @@ const UI = {
             this.screens[screenId].classList.add('active');
             this.currentScreen = screenId;
         }
+
+        // 무기 슬롯 표시/숨김 (게임 화면일 때만 표시)
+        const weaponSlots = document.getElementById('weaponSlotsContainer');
+        if (weaponSlots) {
+            if (screenId === 'gameScreen') {
+                weaponSlots.classList.add('active');
+            } else {
+                weaponSlots.classList.remove('active');
+            }
+        }
     },
 
     updateHealth(current, max) {

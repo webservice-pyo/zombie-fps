@@ -126,37 +126,45 @@ const Controls = {
     setupWeaponSlots() {
         // 무기 슬롯 컨테이너에서 슬롯 가져오기
         const container = document.getElementById('weaponSlotsContainer');
-        if (!container) return;
+        if (!container) {
+            console.error('weaponSlotsContainer not found!');
+            return;
+        }
 
         const slots = container.querySelectorAll('.weapon-slot');
+        console.log('Setting up weapon slots:', slots.length);
+
         slots.forEach((slot, index) => {
-            // 터치 시작 이벤트 (모바일)
-            slot.ontouchstart = (e) => {
+            // 기존 이벤트 제거 후 새로 등록
+            const newSlot = slot.cloneNode(true);
+            slot.parentNode.replaceChild(newSlot, slot);
+
+            // 무기 변경 함수
+            const switchWeapon = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
-                if (!slot.classList.contains('locked') && game.state === 'playing') {
-                    game.player.weapons.switchWeapon(index);
-                    UI.updateWeapon(game.player.weapons);
-                    // 시각적 피드백
-                    slot.style.transform = 'scale(0.85)';
-                    slot.style.background = 'rgba(196, 30, 58, 0.6)';
-                    setTimeout(() => {
-                        slot.style.transform = '';
-                        slot.style.background = '';
-                    }, 150);
+                console.log('Weapon slot touched:', index, 'locked:', newSlot.classList.contains('locked'), 'state:', game.state);
+
+                if (!newSlot.classList.contains('locked') && game.state === 'playing') {
+                    const success = game.player.weapons.switchWeapon(index);
+                    console.log('Switch weapon result:', success);
+                    if (success) {
+                        UI.updateWeapon(game.player.weapons);
+                        // 시각적 피드백
+                        newSlot.style.transform = 'scale(0.85)';
+                        newSlot.style.background = 'rgba(196, 30, 58, 0.6)';
+                        setTimeout(() => {
+                            newSlot.style.transform = '';
+                            newSlot.style.background = '';
+                        }, 150);
+                    }
                 }
             };
 
-            // 클릭 이벤트 (PC)
-            slot.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!slot.classList.contains('locked') && game.state === 'playing') {
-                    game.player.weapons.switchWeapon(index);
-                    UI.updateWeapon(game.player.weapons);
-                }
-            };
+            // 터치와 클릭 모두 등록
+            newSlot.addEventListener('touchstart', switchWeapon, { passive: false });
+            newSlot.addEventListener('click', switchWeapon);
         });
     },
 
