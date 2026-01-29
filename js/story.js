@@ -378,11 +378,11 @@ const StoryData = {
                 duration: 2000
             },
             {
-                text: "THE END",
+                text: "축하해 서준아! 게임을 끝까지 클리어했어!",
                 duration: 3000
             },
             {
-                text: "플레이해 주셔서 감사합니다!",
+                text: "THE END",
                 duration: 3000
             }
         ]
