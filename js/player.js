@@ -24,6 +24,10 @@ class Player {
         this.lastDamageTime = 0;
         this.invincibleTime = 500; // 피격 후 무적 시간
 
+        // 애니메이션
+        this.walkFrame = 0;
+        this.walkTimer = 0;
+
         // 통계
         this.shotsFired = 0;
         this.shotsHit = 0;
@@ -45,6 +49,13 @@ class Player {
         // 이동 처리
         if (this.moveX !== 0 || this.moveY !== 0) {
             this.isMoving = true;
+
+            // 걷기 애니메이션
+            this.walkTimer += deltaTime;
+            if (this.walkTimer > 150) {
+                this.walkTimer = 0;
+                this.walkFrame = (this.walkFrame + 1) % 4;
+            }
 
             // 대각선 이동 정규화
             let dx = this.moveX;
@@ -80,6 +91,7 @@ class Player {
             }
         } else {
             this.isMoving = false;
+            this.walkFrame = 0;
         }
 
         // 무기 업데이트
@@ -140,7 +152,7 @@ class Player {
                 }
             }
         } else {
-            // 원거리 공격 - 레이캐스트
+            // 원거리 공격 - 레이캐스트 (조준 방향으로 발사)
             const spreadAngle = this.angle + Utils.toRadians(bullet.spread);
             const endX = this.x + Math.cos(spreadAngle) * bullet.range;
             const endY = this.y + Math.sin(spreadAngle) * bullet.range;
@@ -154,7 +166,7 @@ class Player {
                 // 레이와 원의 교차 판정
                 const hit = this.rayCircleIntersect(
                     this.x, this.y, endX, endY,
-                    enemy.x, enemy.y, enemy.size / 2
+                    enemy.x, enemy.y, enemy.size / 2 + 5 // 약간의 여유 추가
                 );
 
                 if (hit && hit.distance < closestDist) {
@@ -248,59 +260,93 @@ class Player {
             ctx.globalAlpha = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
         }
 
-        // 몸체
-        ctx.fillStyle = '#4a90d9';
+        // 그림자
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
-        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.ellipse(0, 18, 15, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#2a5a9a';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // 방향 (무기)
+        // 몸체 (사람 모양)
         ctx.save();
-        ctx.rotate(this.angle);
+        ctx.rotate(this.angle + Math.PI / 2); // 캐릭터가 조준 방향을 바라보게
 
-        const weapon = this.weapons.getCurrentWeapon();
+        // 다리
+        const legOffset = this.isMoving ? Math.sin(this.walkFrame * Math.PI / 2) * 5 : 0;
+        ctx.fillStyle = '#2c3e50'; // 바지
+        ctx.fillRect(-8, 5, 6, 18 + legOffset);
+        ctx.fillRect(2, 5, 6, 18 - legOffset);
 
-        if (weapon.type === WeaponTypes.MELEE) {
-            // 나이프
-            ctx.fillStyle = '#888';
-            ctx.fillRect(this.radius - 5, -3, 25, 6);
-            ctx.fillStyle = '#666';
-            ctx.beginPath();
-            ctx.moveTo(this.radius + 20, -3);
-            ctx.lineTo(this.radius + 30, 0);
-            ctx.lineTo(this.radius + 20, 3);
-            ctx.fill();
-        } else {
-            // 총
-            ctx.fillStyle = '#333';
-            ctx.fillRect(this.radius - 5, -4, 30, 8);
+        // 몸통
+        ctx.fillStyle = '#3498db'; // 파란 셔츠
+        ctx.fillRect(-10, -10, 20, 18);
 
-            // 총구
-            ctx.fillStyle = '#222';
-            ctx.fillRect(this.radius + 20, -3, 8, 6);
-        }
+        // 조끼/갑옷
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillRect(-8, -8, 16, 12);
 
-        ctx.restore();
+        // 머리
+        ctx.fillStyle = '#f5d0a9'; // 피부색
+        ctx.beginPath();
+        ctx.arc(0, -18, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 헬멧
+        ctx.fillStyle = '#34495e';
+        ctx.beginPath();
+        ctx.arc(0, -20, 11, Math.PI, 0);
+        ctx.fill();
 
         // 눈
-        ctx.save();
-        ctx.rotate(this.angle);
-
         ctx.fillStyle = 'white';
         ctx.beginPath();
-        ctx.arc(5, -6, 5, 0, Math.PI * 2);
-        ctx.arc(5, 6, 5, 0, Math.PI * 2);
+        ctx.arc(-4, -18, 3, 0, Math.PI * 2);
+        ctx.arc(4, -18, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = '#2c3e50';
         ctx.beginPath();
-        ctx.arc(7, -6, 2, 0, Math.PI * 2);
-        ctx.arc(7, 6, 2, 0, Math.PI * 2);
+        ctx.arc(-4, -18, 1.5, 0, Math.PI * 2);
+        ctx.arc(4, -18, 1.5, 0, Math.PI * 2);
         ctx.fill();
+
+        // 팔
+        const weapon = this.weapons.getCurrentWeapon();
+        ctx.fillStyle = '#f5d0a9';
+
+        if (weapon.type === WeaponTypes.MELEE) {
+            // 나이프 들고 있는 팔
+            ctx.save();
+            ctx.translate(12, -5);
+            ctx.rotate(-0.3);
+            ctx.fillRect(-3, -3, 6, 20);
+            // 나이프
+            ctx.fillStyle = '#95a5a6';
+            ctx.fillRect(-2, 17, 4, 15);
+            ctx.fillStyle = '#7f8c8d';
+            ctx.beginPath();
+            ctx.moveTo(-2, 32);
+            ctx.lineTo(0, 38);
+            ctx.lineTo(2, 32);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.fillStyle = '#f5d0a9';
+            ctx.fillRect(-15, -5, 6, 15);
+        } else {
+            // 총 들고 있는 양팔
+            ctx.fillRect(-15, -8, 6, 18);
+            ctx.fillRect(9, -8, 6, 18);
+
+            // 총
+            ctx.fillStyle = '#2c2c2c';
+            ctx.fillRect(-5, -25, 10, 25);
+            // 총구
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(-3, -35, 6, 12);
+            // 손잡이
+            ctx.fillStyle = '#8b4513';
+            ctx.fillRect(-4, 0, 8, 8);
+        }
 
         ctx.restore();
 

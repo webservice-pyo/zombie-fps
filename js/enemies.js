@@ -11,56 +11,60 @@ const EnemyTypes = {
 const EnemyData = {
     walker: {
         name: '워커',
-        emoji: '🧟',
-        color: '#5a8a5a',
+        color: '#5a7a5a',
+        skinColor: '#7a9a7a',
+        clothColor: '#4a4a4a',
         health: 60,
         damage: 10,
         speed: 1.2,
         attackRange: 50,
         attackSpeed: 1200,
-        size: 30,
+        size: 35,
         score: 10,
         description: '느리지만 꾸준히 다가오는 기본 좀비'
     },
 
     runner: {
         name: '러너',
-        emoji: '🏃',
-        color: '#8a5a5a',
+        color: '#7a5a5a',
+        skinColor: '#9a7a7a',
+        clothColor: '#3a3a3a',
         health: 40,
         damage: 15,
         speed: 2.5,
         attackRange: 45,
         attackSpeed: 800,
-        size: 25,
+        size: 30,
         score: 20,
         description: '빠르게 달려오는 좀비'
     },
 
     brute: {
         name: '브루트',
-        emoji: '👹',
-        color: '#5a5a8a',
+        color: '#5a5a7a',
+        skinColor: '#6a6a8a',
+        clothColor: '#2a2a3a',
         health: 200,
         damage: 25,
         speed: 0.8,
         attackRange: 60,
         attackSpeed: 1500,
-        size: 45,
+        size: 55,
         score: 50,
         description: '크고 강한 탱커 좀비'
     },
 
     spitter: {
         name: '스피터',
-        emoji: '🤮',
-        color: '#8a8a5a',
+        color: '#7a7a5a',
+        skinColor: '#9a9a6a',
+        clothColor: '#3a3a2a',
         health: 50,
         damage: 12,
         speed: 1.0,
         attackRange: 200,
         attackSpeed: 2000,
-        size: 28,
+        size: 32,
         score: 30,
         ranged: true,
         projectileSpeed: 4,
@@ -69,14 +73,15 @@ const EnemyData = {
 
     boss: {
         name: '보스',
-        emoji: '👿',
-        color: '#8b0000',
+        color: '#6a2a2a',
+        skinColor: '#8a4a4a',
+        clothColor: '#2a1a1a',
         health: 500,
         damage: 35,
         speed: 1.5,
         attackRange: 70,
         attackSpeed: 1000,
-        size: 60,
+        size: 70,
         score: 200,
         description: '챕터 보스'
     }
@@ -89,8 +94,9 @@ class Enemy {
         this.id = Utils.generateId();
         this.type = type;
         this.name = data.name;
-        this.emoji = data.emoji;
         this.color = data.color;
+        this.skinColor = data.skinColor;
+        this.clothColor = data.clothColor;
 
         this.x = x;
         this.y = y;
@@ -122,6 +128,10 @@ class Enemy {
         this.hitFlash = 0;
         this.deathTimer = 0;
         this.angle = 0;
+
+        // 애니메이션
+        this.walkFrame = 0;
+        this.walkTimer = 0;
     }
 
     update(playerX, playerY, deltaTime) {
@@ -138,6 +148,15 @@ class Enemy {
         // 공격 애니메이션
         if (this.attackAnimTimer > 0) {
             this.attackAnimTimer -= deltaTime;
+        }
+
+        // 걷기 애니메이션
+        if (this.state === 'chase' || this.state === 'wander') {
+            this.walkTimer += deltaTime;
+            if (this.walkTimer > 200) {
+                this.walkTimer = 0;
+                this.walkFrame = (this.walkFrame + 1) % 4;
+            }
         }
 
         // 플레이어와의 거리
@@ -298,41 +317,146 @@ class Enemy {
         if (!this.isAlive) {
             const alpha = 1 - (this.deathTimer / 500);
             ctx.globalAlpha = alpha;
-            ctx.rotate(this.deathTimer * 0.005);
+            ctx.rotate(this.deathTimer * 0.003);
         }
 
-        // 몸체
-        let bodyColor = this.color;
+        // 히트 플래시
+        let currentSkinColor = this.skinColor;
+        let currentClothColor = this.clothColor;
         if (this.hitFlash > 0) {
-            bodyColor = '#ffffff';
+            currentSkinColor = '#ffffff';
+            currentClothColor = '#ffffff';
         }
 
-        ctx.fillStyle = bodyColor;
+        // 그림자
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
-        ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+        ctx.ellipse(0, this.size / 2 - 5, this.size / 3, this.size / 8, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 외곽선
-        ctx.strokeStyle = Utils.adjustBrightness(this.color, -30);
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // 방향 표시 (머리)
+        // 좀비 몸체
         ctx.save();
-        ctx.rotate(this.angle);
+        ctx.rotate(this.angle + Math.PI / 2);
+
+        const scale = this.size / 35; // 기본 크기 기준 스케일
+
+        // 다리 (찢어진 바지)
+        const legOffset = (this.state === 'chase' || this.state === 'wander')
+            ? Math.sin(this.walkFrame * Math.PI / 2) * 4 * scale : 0;
+
+        ctx.fillStyle = currentClothColor;
+        // 왼쪽 다리
+        ctx.fillRect(-7 * scale, 3 * scale, 5 * scale, 15 * scale + legOffset);
+        // 오른쪽 다리
+        ctx.fillRect(2 * scale, 3 * scale, 5 * scale, 15 * scale - legOffset);
+
+        // 찢어진 효과
+        ctx.fillStyle = currentSkinColor;
+        ctx.fillRect(-6 * scale, 12 * scale, 3 * scale, 6 * scale);
+        ctx.fillRect(3 * scale, 10 * scale, 3 * scale, 8 * scale);
+
+        // 몸통 (찢어진 옷)
+        ctx.fillStyle = currentClothColor;
+        ctx.fillRect(-9 * scale, -10 * scale, 18 * scale, 16 * scale);
+
+        // 찢어진 옷 효과 - 피부 노출
+        ctx.fillStyle = currentSkinColor;
+        ctx.fillRect(-7 * scale, -5 * scale, 6 * scale, 8 * scale);
+        ctx.fillRect(3 * scale, -8 * scale, 4 * scale, 10 * scale);
+
+        // 상처/피
+        ctx.fillStyle = '#8b0000';
+        ctx.fillRect(-5 * scale, -3 * scale, 3 * scale, 4 * scale);
+        ctx.fillRect(4 * scale, -6 * scale, 2 * scale, 5 * scale);
 
         // 머리
-        ctx.fillStyle = Utils.adjustBrightness(this.color, 20);
+        ctx.fillStyle = currentSkinColor;
         ctx.beginPath();
-        ctx.arc(this.size / 3, 0, this.size / 4, 0, Math.PI * 2);
+        ctx.arc(0, -16 * scale, 9 * scale, 0, Math.PI * 2);
         ctx.fill();
 
-        // 눈
-        ctx.fillStyle = this.state === 'chase' || this.state === 'attack' ? '#ff0000' : '#880000';
+        // 머리카락 (헝클어진)
+        ctx.fillStyle = this.type === 'boss' ? '#2a0a0a' : '#3a3a3a';
         ctx.beginPath();
-        ctx.arc(this.size / 2.5, -3, 3, 0, Math.PI * 2);
-        ctx.arc(this.size / 2.5, 3, 3, 0, Math.PI * 2);
+        ctx.arc(0, -18 * scale, 9 * scale, Math.PI * 1.2, Math.PI * 1.8);
         ctx.fill();
+        // 삐죽삐죽 머리카락
+        for (let i = 0; i < 5; i++) {
+            ctx.fillRect((-6 + i * 3) * scale, -26 * scale, 2 * scale, (4 + Math.random() * 3) * scale);
+        }
+
+        // 눈 (빨간 눈, 한쪽은 다름)
+        const isAggro = this.state === 'chase' || this.state === 'attack';
+
+        // 왼쪽 눈
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(-4 * scale, -16 * scale, 3 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = isAggro ? '#ff0000' : '#880000';
+        ctx.beginPath();
+        ctx.arc(-4 * scale, -16 * scale, 2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 오른쪽 눈 (상처로 감김)
+        if (this.type !== 'brute') {
+            ctx.strokeStyle = '#8b0000';
+            ctx.lineWidth = 2 * scale;
+            ctx.beginPath();
+            ctx.moveTo(2 * scale, -18 * scale);
+            ctx.lineTo(6 * scale, -14 * scale);
+            ctx.moveTo(2 * scale, -14 * scale);
+            ctx.lineTo(6 * scale, -18 * scale);
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = '#111';
+            ctx.beginPath();
+            ctx.arc(4 * scale, -16 * scale, 3 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = isAggro ? '#ff0000' : '#880000';
+            ctx.beginPath();
+            ctx.arc(4 * scale, -16 * scale, 2 * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 입 (벌어진)
+        ctx.fillStyle = '#2a0a0a';
+        ctx.beginPath();
+        ctx.ellipse(0, -10 * scale, 4 * scale, 3 * scale, 0, 0, Math.PI);
+        ctx.fill();
+
+        // 이빨
+        ctx.fillStyle = '#ddd';
+        ctx.fillRect(-3 * scale, -10 * scale, 2 * scale, 2 * scale);
+        ctx.fillRect(1 * scale, -10 * scale, 2 * scale, 2 * scale);
+
+        // 팔 (한쪽은 늘어뜨린 상태)
+        const armSwing = isAggro ? Math.sin(Date.now() * 0.01) * 0.3 : 0;
+
+        // 왼팔 (앞으로 뻗음)
+        ctx.save();
+        ctx.translate(-10 * scale, -5 * scale);
+        ctx.rotate(-0.5 + armSwing);
+        ctx.fillStyle = currentSkinColor;
+        ctx.fillRect(-2 * scale, 0, 4 * scale, 18 * scale);
+        // 손
+        ctx.fillStyle = currentSkinColor;
+        ctx.beginPath();
+        ctx.arc(0, 20 * scale, 4 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 오른팔 (늘어뜨림)
+        ctx.save();
+        ctx.translate(10 * scale, -5 * scale);
+        ctx.rotate(0.3 - armSwing * 0.5);
+        ctx.fillStyle = currentSkinColor;
+        ctx.fillRect(-2 * scale, 0, 4 * scale, 16 * scale);
+        // 손
+        ctx.beginPath();
+        ctx.arc(0, 18 * scale, 3 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
 
         ctx.restore();
 
@@ -352,10 +476,18 @@ class Enemy {
             const healthPercent = this.health / this.maxHealth;
 
             ctx.fillStyle = '#333';
-            ctx.fillRect(-barWidth / 2, -this.size / 2 - 15, barWidth, barHeight);
+            ctx.fillRect(-barWidth / 2, -this.size / 2 - 25, barWidth, barHeight);
 
             ctx.fillStyle = healthPercent > 0.3 ? '#4caf50' : '#f44336';
-            ctx.fillRect(-barWidth / 2, -this.size / 2 - 15, barWidth * healthPercent, barHeight);
+            ctx.fillRect(-barWidth / 2, -this.size / 2 - 25, barWidth * healthPercent, barHeight);
+
+            // 보스 이름 표시
+            if (this.type === 'boss') {
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('BOSS', 0, -this.size / 2 - 30);
+            }
         }
 
         ctx.restore();
@@ -379,12 +511,13 @@ class EnemyProjectile {
         this.y = y;
         this.damage = damage;
         this.speed = speed;
-        this.size = 8;
+        this.size = 10;
         this.color = '#88ff88';
 
         const angle = Utils.angle(x, y, targetX, targetY);
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
+        this.angle = angle;
 
         this.lifetime = 3000; // 3초 후 소멸
         this.age = 0;
@@ -402,16 +535,27 @@ class EnemyProjectile {
         const screenX = this.x - cameraX;
         const screenY = this.y - cameraY;
 
-        ctx.fillStyle = this.color;
+        ctx.save();
+        ctx.translate(screenX, screenY);
+        ctx.rotate(this.angle);
+
+        // 독침 모양
+        ctx.fillStyle = '#66ff66';
         ctx.beginPath();
-        ctx.arc(screenX, screenY, this.size, 0, Math.PI * 2);
+        ctx.moveTo(15, 0);
+        ctx.lineTo(-8, -6);
+        ctx.lineTo(-5, 0);
+        ctx.lineTo(-8, 6);
+        ctx.closePath();
         ctx.fill();
 
         // 독 효과
         ctx.fillStyle = 'rgba(100, 255, 100, 0.3)';
         ctx.beginPath();
-        ctx.arc(screenX, screenY, this.size * 1.5, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.size * 1.5, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.restore();
     }
 
     getHitbox() {
