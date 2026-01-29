@@ -152,14 +152,33 @@ class Player {
             for (const enemy of enemies) {
                 if (!enemy.isAlive) continue;
 
+                // 레이캐스트 히트 체크
                 const hit = this.rayCircleIntersect(
                     this.x, this.y, endX, endY,
-                    enemy.x, enemy.y, enemy.size / 2 + 10
+                    enemy.x, enemy.y, enemy.size / 2 + 25
                 );
 
                 if (hit && hit.distance < closestDist) {
                     closestDist = hit.distance;
                     closestEnemy = enemy;
+                }
+
+                // 추가: 조준 방향 내 적 체크 (콘 형태 히트 판정)
+                if (!closestEnemy) {
+                    const dist = Utils.distance(this.x, this.y, enemy.x, enemy.y);
+                    if (dist <= bullet.range) {
+                        const angleToEnemy = Utils.angle(this.x, this.y, enemy.x, enemy.y);
+                        let angleDiff = Math.abs(spreadAngle - angleToEnemy);
+                        if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+
+                        // 거리에 따라 허용 각도 증가 (가까울수록 더 넓은 각도)
+                        const allowedAngle = Math.PI / 8 + (1 - dist / bullet.range) * Math.PI / 6;
+
+                        if (angleDiff < allowedAngle && dist < closestDist) {
+                            closestDist = dist;
+                            closestEnemy = enemy;
+                        }
+                    }
                 }
             }
 
