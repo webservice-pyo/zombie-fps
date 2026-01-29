@@ -1,0 +1,729 @@
+/* 기본 리셋 및 전역 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0a0a0a;
+    color: white;
+    touch-action: none;
+}
+
+/* 화면 전환 */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* 타이틀 화면 */
+#titleScreen {
+    background: linear-gradient(180deg, #1a0a0a 0%, #2d1515 50%, #0a0a0a 100%);
+    flex-direction: column;
+}
+
+.title-content {
+    text-align: center;
+    z-index: 2;
+}
+
+.game-title {
+    font-size: 4em;
+    color: #c41e3a;
+    text-shadow: 0 0 20px #c41e3a, 0 0 40px #8b0000;
+    letter-spacing: 10px;
+    animation: titlePulse 2s ease-in-out infinite;
+}
+
+.game-subtitle {
+    font-size: 1.5em;
+    color: #888;
+    margin-top: 10px;
+    letter-spacing: 5px;
+}
+
+@keyframes titlePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.blood-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(139, 0, 0, 0.3) 100%);
+    pointer-events: none;
+}
+
+.menu-buttons {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-btn {
+    padding: 15px 40px;
+    font-size: 1.2em;
+    background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
+    border: 2px solid #555;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 200px;
+}
+
+.menu-btn:hover, .menu-btn:active {
+    background: linear-gradient(180deg, #c41e3a 0%, #8b0000 100%);
+    border-color: #c41e3a;
+    transform: scale(1.05);
+}
+
+.mobile-notice {
+    margin-top: 30px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* 조작법 화면 */
+#howToPlayScreen {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.howto-content {
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    border: 2px solid #333;
+}
+
+.howto-content h2 {
+    color: #c41e3a;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.control-section {
+    margin-bottom: 20px;
+}
+
+.control-section h3 {
+    color: #ffa500;
+    margin-bottom: 10px;
+}
+
+.control-section p {
+    color: #aaa;
+    margin: 5px 0;
+    font-size: 0.95em;
+}
+
+/* 스토리 화면 */
+#storyScreen {
+    background: #000;
+}
+
+.story-content {
+    max-width: 600px;
+    padding: 30px;
+    text-align: center;
+}
+
+#storyText {
+    font-size: 1.2em;
+    line-height: 1.8;
+    color: #ccc;
+    margin-bottom: 30px;
+    min-height: 200px;
+}
+
+.story-btn {
+    padding: 12px 30px;
+    font-size: 1em;
+    background: #333;
+    border: 1px solid #555;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+.story-btn:hover {
+    background: #444;
+}
+
+/* 게임 화면 */
+#gameScreen {
+    background: #000;
+}
+
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.hud-top {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+}
+
+.chapter-info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+#chapterName {
+    font-size: 1em;
+    color: #c41e3a;
+    font-weight: bold;
+}
+
+#objectiveText {
+    font-size: 0.8em;
+    color: #aaa;
+}
+
+.health-bar {
+    position: relative;
+    width: 200px;
+    height: 25px;
+    background: #333;
+    border: 2px solid #555;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.bar-fill.health {
+    background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
+}
+
+.health-bar span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8em;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+}
+
+.hud-bottom {
+    position: absolute;
+    bottom: 120px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.weapon-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #444;
+}
+
+.weapon-icon {
+    font-size: 2em;
+}
+
+.ammo-display {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+#currentAmmo {
+    color: #ffa500;
+}
+
+.weapon-slots {
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.weapon-slot {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #444;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.weapon-slot.active {
+    border-color: #c41e3a;
+    background: rgba(196, 30, 58, 0.3);
+}
+
+.weapon-slot.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 모바일 컨트롤 */
+#mobileControls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.control-zone {
+    position: absolute;
+    bottom: 0;
+    width: 50%;
+    height: 40%;
+    pointer-events: auto;
+}
+
+.control-zone.left {
+    left: 0;
+}
+
+.control-zone.right {
+    right: 0;
+}
+
+.joystick-base {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.joystick-thumb {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transition: transform 0.1s;
+}
+
+.action-buttons {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 15px;
+    pointer-events: auto;
+}
+
+.action-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 1.8em;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-btn.shoot {
+    background: rgba(196, 30, 58, 0.5);
+    border-color: #c41e3a;
+}
+
+.action-btn:active {
+    transform: scale(0.9);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 일시정지 메뉴 */
+.overlay-menu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 50;
+}
+
+.overlay-menu.active {
+    display: flex;
+}
+
+.overlay-menu h2 {
+    font-size: 2em;
+    color: #c41e3a;
+    margin-bottom: 20px;
+}
+
+/* 대화 박스 */
+.dialog-box {
+    display: none;
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #555;
+    border-radius: 10px;
+    padding: 15px;
+    z-index: 20;
+    pointer-events: auto;
+}
+
+.dialog-box.active {
+    display: flex;
+    gap: 15px;
+}
+
+.dialog-portrait {
+    width: 60px;
+    height: 60px;
+    background: #333;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    flex-shrink: 0;
+}
+
+.dialog-content {
+    flex: 1;
+}
+
+.dialog-name {
+    color: #ffa500;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.dialog-text {
+    color: #ddd;
+    line-height: 1.5;
+    font-size: 0.95em;
+}
+
+.dialog-next {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.2em;
+    cursor: pointer;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* 픽업 알림 */
+.pickup-notice {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: 2px solid #ffa500;
+    color: #ffa500;
+    font-size: 1.2em;
+    z-index: 25;
+    animation: fadeInOut 2s forwards;
+}
+
+.pickup-notice.active {
+    display: block;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* 챕터 클리어 */
+#chapterClearScreen {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.clear-content {
+    text-align: center;
+    background: #1a1a1a;
+    padding: 40px;
+    border-radius: 10px;
+    border: 2px solid #4caf50;
+}
+
+.clear-content h2 {
+    color: #4caf50;
+    font-size: 2em;
+    margin-bottom: 30px;
+}
+
+.stats {
+    margin-bottom: 30px;
+}
+
+.stats p {
+    font-size: 1.1em;
+    margin: 10px 0;
+    color: #aaa;
+}
+
+.stats span {
+    color: #ffa500;
+    font-weight: bold;
+}
+
+/* 게임 오버 */
+#gameOverScreen {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.gameover-content {
+    text-align: center;
+}
+
+.gameover-content h2 {
+    font-size: 3em;
+    color: #c41e3a;
+    text-shadow: 0 0 20px #c41e3a;
+    margin-bottom: 20px;
+}
+
+.death-message {
+    color: #888;
+    margin-bottom: 30px;
+}
+
+/* 엔딩 */
+#endingScreen {
+    background: #000;
+}
+
+.ending-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 30px;
+}
+
+.ending-content h2 {
+    color: #c41e3a;
+    margin-bottom: 30px;
+}
+
+#endingText {
+    color: #ccc;
+    line-height: 1.8;
+    margin-bottom: 40px;
+}
+
+.credits {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.credits h3 {
+    color: #888;
+    margin-bottom: 15px;
+}
+
+/* 로딩 화면 */
+#loadingScreen {
+    background: #0a0a0a;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 20px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.loading-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #c41e3a, #ff6b6b);
+    transition: width 0.3s;
+}
+
+#loadingText {
+    color: #666;
+}
+
+/* 데미지 효과 */
+.damage-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(255, 0, 0, 0.5) 100%);
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.damage-overlay.active {
+    opacity: 1;
+}
+
+/* 크로스헤어 */
+.crosshair {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 30;
+}
+
+.crosshair::before,
+.crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.crosshair::before {
+    width: 20px;
+    height: 2px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.crosshair::after {
+    width: 2px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+    .game-title {
+        font-size: 2.5em;
+        letter-spacing: 5px;
+    }
+
+    .game-subtitle {
+        font-size: 1em;
+    }
+
+    .menu-btn {
+        padding: 12px 30px;
+        font-size: 1em;
+        min-width: 180px;
+    }
+
+    .health-bar {
+        width: 150px;
+        height: 20px;
+    }
+
+    .hud-bottom {
+        bottom: 140px;
+    }
+
+    .weapon-slot {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+}
+
+/* PC에서 모바일 컨트롤 숨기기 */
+@media (hover: hover) and (pointer: fine) {
+    #mobileControls {
+        display: none;
+    }
+
+    .hud-bottom {
+        bottom: 20px;
+    }
+}
