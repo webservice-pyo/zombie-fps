@@ -262,7 +262,9 @@ class Game {
             if (npc.interacted) continue;
 
             const dist = Utils.distance(this.player.x, this.player.y, npc.x, npc.y);
-            if (dist < 60 && Controls.interactPressed) {
+            // 모바일: 가까이 가면 자동 상호작용, PC: E키 필요
+            const shouldInteract = Utils.isMobile() ? (dist < 50) : (dist < 60 && Controls.interactPressed);
+            if (shouldInteract) {
                 Controls.interactPressed = false;
                 this.interactWithNpc(npc);
             }

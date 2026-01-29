@@ -126,16 +126,21 @@ const Controls = {
     setupWeaponSlots() {
         const slots = document.querySelectorAll('.weapon-slot');
         slots.forEach((slot, index) => {
-            slot.addEventListener('click', () => {
-                if (!slot.classList.contains('locked')) {
+            // 클릭 이벤트 (PC)
+            slot.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!slot.classList.contains('locked') && game.state === 'playing') {
                     game.player.weapons.switchWeapon(index);
                     UI.updateWeapon(game.player.weapons);
                 }
             });
 
-            slot.addEventListener('touchstart', (e) => {
+            // 터치 이벤트 (모바일) - touchend로 변경하여 확실한 감지
+            slot.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                if (!slot.classList.contains('locked')) {
+                e.stopPropagation();
+                if (!slot.classList.contains('locked') && game.state === 'playing') {
                     game.player.weapons.switchWeapon(index);
                     UI.updateWeapon(game.player.weapons);
                 }
